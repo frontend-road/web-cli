@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+const program = require('commander')
+const package = require('../package.json')
+
+program
+  .version(package.version)
+  .option('-d, --debug', 'output extra debugging')
+  .option('-s, --small', 'small pizza size')
+  .option('-p, --pizza-type <type>', 'flavour of pizza')
+  .command('init', 'create a vue project')
+  .command('build', 'build a project')
+
+program.parse(process.argv)
