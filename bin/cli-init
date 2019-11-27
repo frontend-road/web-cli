@@ -7,6 +7,7 @@ const semver = require('semver')
 const inquirer = require('inquirer')
 const ora = require('ora')
 const package = require('../package.json')
+const generate = require('../lib/generate')
 
 program
   .version(package.version)
@@ -31,7 +32,7 @@ function checkNodeVersion(wanted, id) {
 }
 checkNodeVersion(package.engines.node, 'cli')
 
-program.parse(process.argv)
+// program.parse(process.argv)
 
 // console.log(process.argv)
 // console.log(program.args)
@@ -50,55 +51,81 @@ help()
 // cli init webpack
 const template = program.args[0]
 const rawName = program.args[1]
+const inPlace = !rawName || rawName === '.' || rawName === './'
+const name = inPlace ? path.resolve('../', process.cwd()) : rawName
+const templateRoot = path.resolve(__dirname, '../templates') // https://github.com/vuejs-templates/
+const src = path.join(templateRoot, template)
+const to = path.resolve(rawName || '.')
+
 console.log('template:', template)
 console.log('rawName:', rawName)
-const inPlace = !rawName || rawName === '.' || rawName === './'
-console.log('是否当前目录：', inPlace)
-const name = inPlace ? path.resolve('../', process.cwd()) : rawName
-console.log('dirname:', name)
+console.log('是否当前目录:', inPlace)
+console.log('name:', name)
+console.log('src:', src)
+console.log('to:', to)
 
 inquirer.prompt([
+  // {
+  //   type: 'confirm',
+  //   name: 'confirm-test',
+  //   message: inPlace ? '在当前目录创建' : `新创建一个目录${rawName}，是否继续？`
+  // },
+  // {
+  //   type: 'input',
+  //   name: 'input-test'
+  // },
+  // {
+  //   type: 'checkbox',
+  //   name: 'checkbox-test',
+  //   choices: ['Choice A', 'Choice B', new inquirer.Separator(), 'Choice C', 'Choice D']
+  // },
+  // {
+  //   type: 'password',
+  //   name: 'password-test'
+  // },
+  //如果在当前目录，提示在当前目录，否则提示新创建一个目录，是否继续
   {
     type: 'confirm',
-    name: 'confirm-test',
-    message: inPlace ? '在当前目录创建' : `新创建一个目录${rawName}，是否继续？`
-  },
-  {
-    type: 'input',
-    name: 'input-test'
-  },
-  {
-    type: 'checkbox',
-    name: 'checkbox-test',
-    choices: ['Choice A', 'Choice B', new inquirer.Separator(), 'Choice C', 'Choice D']
-  },
-  {
-    type: 'password',
-    name: 'password-test'
+    name: 'ok',
+    message: inPlace ? '在当前目录创建' : `新创建一个目录${rawName}，是否继续？`,
+    default: true
   }
 ]).then(answers => {
   console.log(answers)
-  if (answers['confirm-test']) {
-    // copy
-    console.log(chalk.green(`starting copy ${template}`))
-    copy()
+  if (answers['ok']) {
+    console.log(chalk.green(`starting copy template ${template}`))
+    run()
   } else {
-    console.log(chalk.red('oops'))
+    console.log(chalk.red('init canceled'))
   }
 })
 
-function copy() {
+function run() {
   const spinner = ora({
-    text: `Loading ${chalk.red('unicorns')}`,
+    text: `Coping template ${chalk.greenBright(template)}`,
     prefixText: '🇨🇳',
     spinner: 'dots',
     color: 'white',
-  }).start()
-  setTimeout(() => {
-    spinner.color = 'green'
-    spinner.text = 'Loading rainbows'
-  }, 3000)
-  setTimeout(() => {
-    spinner.stop()
-  }, 6000)
+  })
+  // .start()
+
+  // setTimeout(() => {
+  //   spinner.color = 'green'
+  //   spinner.text = 'Loading rainbows'
+  // }, 3000)
+  // setTimeout(() => {
+  //   spinner.stop()
+  // }, 6000)
+
+  // 读取用户输入
+  // 将目录 src 下的模板文件经过 handlebars 处理后生成新的文件
+  // 然后拷贝到指定目录 to 里面
+  generate(name, src, to, (err) => {
+    if (err) {
+      console.log(chalk.red(err.message))
+      process.exit(1)
+    }
+    console.log(chalk.green('Generate template successfully!'))
+    // spinner.stop()
+  })
 }
