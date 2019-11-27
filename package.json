@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "cli": "bin/cli"
+    "cli": "bin/cli",
+    "cli-init": "bin/cli-init"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,13 @@
   },
   "homepage": "https://github.com/frontend-road/web-cli#readme",
   "dependencies": {
-    "commander": "^4.0.1"
+    "chalk": "^3.0.0",
+    "commander": "^4.0.1",
+    "inquirer": "^7.0.0",
+    "ora": "^4.0.3",
+    "semver": "^6.3.0"
+  },
+  "engines": {
+    "node": ">=10"
   }
 }

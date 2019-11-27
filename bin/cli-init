@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+
+const path = require('path')
+const program = require('commander')
+const chalk = require('chalk')
+const semver = require('semver')
+const inquirer = require('inquirer')
+const ora = require('ora')
+const package = require('../package.json')
+
+program
+  .version(package.version)
+  // .option('-d, --debug', 'output extra debugging')
+  // .option('-s, --small', 'small pizza size')
+  // .option('-p, --pizza-type <type>', 'flavour of pizza')
+  // .command('init', 'create a vue project')
+  // .command('build', 'build a project')
+
+program.on('--help', () => {
+  console.log()
+  console.log(chalk.blue('  用模板创建一个项目'))
+  console.log(' $ cli init webpack-simple test')
+  console.log()
+})
+
+function checkNodeVersion(wanted, id) {
+  if (!semver.satisfies(process.version, wanted)) {
+    console.log(chalk.cyan(`当前 Node.js 版本是 ${process.version}，但是此项目 ${id} 需要的版本为 ${wanted}`))
+    process.exit(1)
+  }
+}
+checkNodeVersion(package.engines.node, 'cli')
+
+program.parse(process.argv)
+
+// console.log(process.argv)
+// console.log(program.args)
+
+function help() {
+  program.parse(process.argv)
+  console.log('program.args:', program.args)
+  if (program.args.length < 1) {
+    return program.help()
+  }
+}
+help()
+
+// cli init webpack test
+// cli init webpack .
+// cli init webpack
+const template = program.args[0]
+const rawName = program.args[1]
+console.log('template:', template)
+console.log('rawName:', rawName)
+const inPlace = !rawName || rawName === '.' || rawName === './'
+console.log('是否当前目录：', inPlace)
+const name = inPlace ? path.resolve('../', process.cwd()) : rawName
+console.log('dirname:', name)
+
+inquirer.prompt([
+  {
+    type: 'confirm',
+    name: 'confirm-test',
+    message: inPlace ? '在当前目录创建' : `新创建一个目录${rawName}，是否继续？`
+  },
+  {
+    type: 'input',
+    name: 'input-test'
+  },
+  {
+    type: 'checkbox',
+    name: 'checkbox-test',
+    choices: ['Choice A', 'Choice B', new inquirer.Separator(), 'Choice C', 'Choice D']
+  },
+  {
+    type: 'password',
+    name: 'password-test'
+  }
+]).then(answers => {
+  console.log(answers)
+  if (answers['confirm-test']) {
+    // copy
+    console.log(chalk.green(`starting copy ${template}`))
+    copy()
+  } else {
+    console.log(chalk.red('oops'))
+  }
+})
+
+function copy() {
+  const spinner = ora({
+    text: `Loading ${chalk.red('unicorns')}`,
+    prefixText: '🇨🇳',
+    spinner: 'dots',
+    color: 'white',
+  }).start()
+  setTimeout(() => {
+    spinner.color = 'green'
+    spinner.text = 'Loading rainbows'
+  }, 3000)
+  setTimeout(() => {
+    spinner.stop()
+  }, 6000)
+}
